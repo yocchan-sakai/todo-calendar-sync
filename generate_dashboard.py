@@ -219,9 +219,98 @@ def generate_html(tasks):
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = {{ theme: {{ extend: {{ fontFamily: {{ sans: ['"Noto Sans JP"', 'sans-serif'] }} }} }} }}</script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script>
+    function showTab(tab) {{
+      ['list','matrix'].forEach(function(t) {{
+        var el = document.getElementById('mob-tab-' + t);
+        var btn = document.getElementById('mob-btn-' + t);
+        if (t === tab) {{
+          el.classList.remove('hidden');
+          btn.classList.add('text-violet-700','border-b-2','border-violet-600');
+          btn.classList.remove('text-slate-400');
+        }} else {{
+          el.classList.add('hidden');
+          btn.classList.remove('text-violet-700','border-b-2','border-violet-600');
+          btn.classList.add('text-slate-400');
+        }}
+      }});
+    }}
+  </script>
 </head>
 <body class="bg-slate-100 min-h-screen" style="font-family:'Noto Sans JP',sans-serif;">
-<div class="flex h-screen overflow-hidden">
+
+<!-- ===== MOBILE ===== -->
+<div class="md:hidden flex flex-col h-screen">
+  <header class="bg-white border-b border-slate-200 px-4 pt-3 pb-2 flex-shrink-0">
+    <p class="text-[10px] text-slate-400">{today.strftime("%Y年%-m月%-d日")} &nbsp;·&nbsp; 更新: {updated_at}</p>
+    <div class="flex items-center justify-between mt-1">
+      <h1 class="text-base font-black text-slate-900">マイタスク</h1>
+      <div class="flex gap-1.5">
+        <span class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">🔴 {red_count}</span>
+        <span class="bg-amber-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full">🟡 {amber_count}</span>
+        <span class="bg-blue-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full">🔵 {blue_count}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tab bar -->
+  <div class="bg-white border-b border-slate-200 flex flex-shrink-0">
+    <button id="mob-btn-list" onclick="showTab('list')" class="flex-1 py-2.5 text-sm font-bold text-violet-700 border-b-2 border-violet-600">📋 リスト</button>
+    <button id="mob-btn-matrix" onclick="showTab('matrix')" class="flex-1 py-2.5 text-sm font-bold text-slate-400">🎯 マトリックス</button>
+  </div>
+
+  <!-- Tab content -->
+  <div class="flex-1 overflow-hidden">
+    <!-- List tab -->
+    <div id="mob-tab-list" class="h-full overflow-y-auto pb-4">
+      {list_html}
+    </div>
+
+    <!-- Matrix tab (stacked vertically) -->
+    <div id="mob-tab-matrix" class="h-full overflow-y-auto p-3 pb-6 space-y-3 hidden">
+      {suggest_html}
+      <!-- Q1 -->
+      <div class="bg-white rounded-2xl border-2 border-violet-300 overflow-hidden">
+        <div class="px-4 py-2.5 bg-violet-600 flex items-center justify-between">
+          <div class="flex items-center gap-2"><span class="text-white">🔥</span><span class="text-sm font-black text-white">すぐやる</span></div>
+          <span class="text-[10px] text-violet-200 font-bold">緊急 × 重要</span>
+        </div>
+        <div class="p-3 space-y-2">{q1_html}</div>
+      </div>
+      <!-- Q2 -->
+      <div class="bg-white rounded-2xl border-2 border-teal-400 overflow-hidden">
+        <div class="px-4 py-2.5 bg-teal-600 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-white">⭐</span>
+            <span class="text-sm font-black text-white">計画してやる</span>
+            <span class="text-[10px] text-teal-100 bg-teal-500 px-2 py-0.5 rounded-full font-bold">最重要</span>
+          </div>
+          <span class="text-[10px] text-teal-200 font-bold">余裕 × 重要</span>
+        </div>
+        <div class="p-3 space-y-2">{q2_html}</div>
+      </div>
+      <!-- Q3 -->
+      <div class="bg-white rounded-2xl border-2 border-orange-300 overflow-hidden">
+        <div class="px-4 py-2.5 bg-orange-500 flex items-center justify-between">
+          <div class="flex items-center gap-2"><span class="text-white">📤</span><span class="text-sm font-black text-white">誰かに任せる</span></div>
+          <span class="text-[10px] text-orange-100 font-bold">緊急 × 重要でない</span>
+        </div>
+        <div class="p-3 space-y-2">{q3_html}</div>
+      </div>
+      <!-- Q4 -->
+      <div class="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden opacity-70">
+        <div class="px-4 py-2 bg-slate-400 flex items-center justify-between">
+          <div class="flex items-center gap-2"><span class="text-white text-sm">🗄️</span><span class="text-sm font-black text-white">後回しor削除</span></div>
+          <span class="text-[10px] text-slate-100 font-bold">余裕 × 重要でない</span>
+        </div>
+        <div class="p-3 space-y-2">{q4_html}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DESKTOP ===== -->
+<div class="hidden md:flex h-screen overflow-hidden">
 
   <!-- Nav -->
   <aside class="w-14 bg-slate-900 flex flex-col items-center py-4 gap-5 flex-shrink-0">
@@ -292,8 +381,6 @@ def generate_html(tasks):
           </div>
           <!-- Right col: Q2 (large) + Q4 (small) -->
           <div class="flex-1 flex flex-col gap-3">
-
-            <!-- Q2: 計画してやる (tall) -->
             <div class="bg-white rounded-2xl border-2 border-teal-400 flex flex-col overflow-hidden" style="flex:2;">
               <div class="px-4 py-3 bg-teal-600 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -309,8 +396,6 @@ def generate_html(tasks):
                 {q2_html}
               </div>
             </div>
-
-            <!-- Q4: 後回しor削除 (small) -->
             <div class="bg-white rounded-2xl border-2 border-slate-200 flex flex-col overflow-hidden" style="flex:1;">
               <div class="px-4 py-2 bg-slate-400 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -321,13 +406,13 @@ def generate_html(tasks):
               </div>
               <div class="p-3 flex-1 space-y-2 overflow-auto opacity-70">{q4_html}</div>
             </div>
-
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 </body>
 </html>"""
 
