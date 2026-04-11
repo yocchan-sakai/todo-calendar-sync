@@ -14,7 +14,7 @@ from googleapiclient.discovery import build
 
 from config import SPREADSHEET_ID, SHEET_NAME, EMOJI_MAP, EMOJI_THINKING, EMOJI_SIMPLE
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 
 def get_credentials():
@@ -146,14 +146,14 @@ def generate_html(tasks):
     today = date.today()
     updated_at = datetime.now().strftime("%Y/%m/%d %H:%M")
 
+    # 完了タスクはダッシュボードに表示しない
     active = [t for t in tasks if t["status"] != "完了"]
-    done   = [t for t in tasks if t["status"] == "完了"]
 
     order = {"高": 0, "中": 1, "低": 2}
     def sort_key(t):
         return (order.get(t["importance"], 2), order.get(t["urgency"], 2), t["days_left"] if t["days_left"] is not None else 999)
 
-    sorted_tasks = sorted(active, key=sort_key) + done
+    sorted_tasks = sorted(active, key=sort_key)
 
     red_tasks   = [t for t in sorted_tasks if deadline_color(t["days_left"])["section"] == "red"]
     amber_tasks = [t for t in sorted_tasks if deadline_color(t["days_left"])["section"] == "amber"]

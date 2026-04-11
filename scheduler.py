@@ -22,7 +22,7 @@ from config import (
 
 JST = ZoneInfo("Asia/Tokyo")
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",  # 読み書き両方（完了行削除のため）
     "https://www.googleapis.com/auth/calendar",
 ]
 
@@ -185,6 +185,61 @@ def already_registered(service, title: str, target_date: date) -> bool:
     return any(e.get("summary", "") == title for e in events)
 
 
+# ===== Google Sheets: 完了行を削除 =====
+
+def delete_completed_rows(creds):
+    """ステータスが「完了」の行をSheetsから削除する（下から順に削除）"""
+    service = build("sheets", "v4", credentials=creds)
+
+    result = (
+        service.spreadsheets()
+        .values()
+        .get(spreadsheetId=SPREADSHEET_ID, range=f"{SHEET_NAME}!A2:G")
+        .execute()
+    )
+    rows = result.get("values", [])
+
+    # 完了行のインデックスを収集（0-indexed、実際の行番号は+2）
+    completed_row_indices = [
+        i for i, row in enumerate(rows)
+        if len(row) >= 7 and row[6].strip() == "完了"
+    ]
+
+    if not completed_row_indices:
+        print("  削除対象の完了タスクなし")
+        return
+
+    # スプレッドシートIDを取得
+    sheet_meta = service.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()
+    sheet_id = next(
+        s["properties"]["sheetId"]
+        for s in sheet_meta["sheets"]
+        if s["properties"]["title"] == SHEET_NAME
+    )
+
+    # 下から順に削除（上から削除すると行番号がずれるため）
+    requests = [
+        {
+            "deleteDimension": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "dimension": "ROWS",
+                    "startIndex": i + 1,  # ヘッダー行(0)を除いた実際のインデックス
+                    "endIndex": i + 2,
+                }
+            }
+        }
+        for i in sorted(completed_row_indices, reverse=True)
+    ]
+
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=SPREADSHEET_ID,
+        body={"requests": requests}
+    ).execute()
+
+    print(f"  ✅ 完了タスク {len(completed_row_indices)}件をSheetsから削除しました")
+
+
 # ===== メイン処理 =====
 
 def main():
@@ -237,6 +292,10 @@ def main():
         # 午後に入りきらなかった思考系は午後にも回す
         remaining_thinking = [t for t in thinking_tasks if t["name"] not in scheduled]
         schedule_into(afternoon_slots, remaining_thinking)
+
+    # 完了タスクをSheetsから削除
+    print("\n--- 完了タスクの削除 ---")
+    delete_completed_rows(creds)
 
     print("\n=== 完了 ===")
 
