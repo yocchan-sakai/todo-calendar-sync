@@ -182,9 +182,12 @@ def generate_html(tasks):
         list_html += """<div class="px-3 pt-3 pb-1"><div class="flex items-center gap-1.5 mb-2"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div><span class="text-[10px] font-black text-blue-500 tracking-wider uppercase">余裕あり</span></div></div>"""
         list_html += "".join(task_card_html(t) for t in blue_tasks)
 
+    q4 = [t for t in active if t["importance"] != "高" and t["urgency"] != "高"]
+
     q1_html = "".join(quadrant_card_html(t) for t in q1) or '<p class="text-xs text-slate-300 px-2 py-4 text-center">タスクなし</p>'
     q2_html = "".join(quadrant_card_html(t) for t in q2) or '<p class="text-xs text-slate-300 px-2 py-4 text-center">タスクなし</p>'
     q3_html = "".join(quadrant_card_html(t) for t in q3) or '<p class="text-xs text-slate-300 px-2 py-4 text-center">タスクなし</p>'
+    q4_html = "".join(quadrant_card_html(t) for t in q4) or '<p class="text-xs text-slate-300 px-2 py-4 text-center">タスクなし</p>'
 
     suggest_html = ""
     if suggest:
@@ -287,21 +290,38 @@ def generate_html(tasks):
               <div class="p-3 flex-1 space-y-2 overflow-auto">{q3_html}</div>
             </div>
           </div>
-          <!-- Right col: Q2 full -->
-          <div class="flex-1 bg-white rounded-2xl border-2 border-teal-400 flex flex-col overflow-hidden">
-            <div class="px-4 py-3 bg-teal-600 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-white">⭐</span>
-                <span class="text-sm font-black text-white">計画してやる</span>
-                <span class="text-[10px] text-teal-100 bg-teal-500 px-2 py-0.5 rounded-full font-bold">最重要</span>
+          <!-- Right col: Q2 (large) + Q4 (small) -->
+          <div class="flex-1 flex flex-col gap-3">
+
+            <!-- Q2: 計画してやる (tall) -->
+            <div class="bg-white rounded-2xl border-2 border-teal-400 flex flex-col overflow-hidden" style="flex:2;">
+              <div class="px-4 py-3 bg-teal-600 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-white">⭐</span>
+                  <span class="text-sm font-black text-white">計画してやる</span>
+                  <span class="text-[10px] text-teal-100 bg-teal-500 px-2 py-0.5 rounded-full font-bold">最重要</span>
+                </div>
+                <span class="text-[10px] text-teal-200 font-bold">余裕あり × 重要</span>
               </div>
-              <span class="text-[10px] text-teal-200 font-bold">余裕あり × 重要</span>
+              {suggest_html}
+              <div class="p-3 flex-1 space-y-2 overflow-auto">
+                {"" if not suggest_html else '<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">その他のタスク</p>'}
+                {q2_html}
+              </div>
             </div>
-            {suggest_html}
-            <div class="p-3 flex-1 space-y-2 overflow-auto">
-              {"" if not suggest_html else '<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">その他のタスク</p>'}
-              {q2_html}
+
+            <!-- Q4: 後回しor削除 (small) -->
+            <div class="bg-white rounded-2xl border-2 border-slate-200 flex flex-col overflow-hidden" style="flex:1;">
+              <div class="px-4 py-2 bg-slate-400 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-white text-sm">🗄️</span>
+                  <span class="text-sm font-black text-white">後回しor削除</span>
+                </div>
+                <span class="text-[10px] text-slate-100 font-bold">余裕あり × 重要でない</span>
+              </div>
+              <div class="p-3 flex-1 space-y-2 overflow-auto opacity-70">{q4_html}</div>
             </div>
+
           </div>
         </div>
       </div>

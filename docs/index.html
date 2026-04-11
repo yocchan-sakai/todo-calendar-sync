@@ -100,7 +100,7 @@
   <div class="flex-1 flex flex-col overflow-hidden">
     <header class="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between flex-shrink-0">
       <div>
-        <p class="text-[11px] text-slate-400">2026年4月11日 &nbsp;·&nbsp; 最終更新: 2026/04/11 10:02</p>
+        <p class="text-[11px] text-slate-400">2026年4月11日 &nbsp;·&nbsp; 最終更新: 2026/04/11 10:20</p>
         <h1 class="text-base font-black text-slate-900">重要度 × 緊急度マトリックス</h1>
       </div>
       <div class="flex items-center gap-2">
@@ -168,17 +168,20 @@
 </div></div>
             </div>
           </div>
-          <!-- Right col: Q2 full -->
-          <div class="flex-1 bg-white rounded-2xl border-2 border-teal-400 flex flex-col overflow-hidden">
-            <div class="px-4 py-3 bg-teal-600 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-white">⭐</span>
-                <span class="text-sm font-black text-white">計画してやる</span>
-                <span class="text-[10px] text-teal-100 bg-teal-500 px-2 py-0.5 rounded-full font-bold">最重要</span>
+          <!-- Right col: Q2 (large) + Q4 (small) -->
+          <div class="flex-1 flex flex-col gap-3">
+
+            <!-- Q2: 計画してやる (tall) -->
+            <div class="bg-white rounded-2xl border-2 border-teal-400 flex flex-col overflow-hidden" style="flex:2;">
+              <div class="px-4 py-3 bg-teal-600 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-white">⭐</span>
+                  <span class="text-sm font-black text-white">計画してやる</span>
+                  <span class="text-[10px] text-teal-100 bg-teal-500 px-2 py-0.5 rounded-full font-bold">最重要</span>
+                </div>
+                <span class="text-[10px] text-teal-200 font-bold">余裕あり × 重要</span>
               </div>
-              <span class="text-[10px] text-teal-200 font-bold">余裕あり × 重要</span>
-            </div>
-            
+              
 <div class="mx-3 mt-3 rounded-xl bg-teal-50 border-2 border-teal-300 overflow-hidden">
   <div class="flex items-center gap-2 px-3 py-2 border-b border-teal-200">
     <span class="text-xs">✨</span>
@@ -193,9 +196,9 @@
     </div>
   </div>
 </div>
-            <div class="p-3 flex-1 space-y-2 overflow-auto">
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">その他のタスク</p>
-              
+              <div class="p-3 flex-1 space-y-2 overflow-auto">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">その他のタスク</p>
+                
 <div class="rounded-xl overflow-hidden border border-slate-100 hover:shadow-sm transition-all cursor-pointer flex ">
   <div class="w-2 bg-red-500 flex-shrink-0"></div>
   <div class="flex-1 px-3 py-2.5 bg-white">
@@ -211,7 +214,21 @@
     </div>
   </div>
 </div>
+              </div>
             </div>
+
+            <!-- Q4: 後回しor削除 (small) -->
+            <div class="bg-white rounded-2xl border-2 border-slate-200 flex flex-col overflow-hidden" style="flex:1;">
+              <div class="px-4 py-2 bg-slate-400 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-white text-sm">🗄️</span>
+                  <span class="text-sm font-black text-white">後回しor削除</span>
+                </div>
+                <span class="text-[10px] text-slate-100 font-bold">余裕あり × 重要でない</span>
+              </div>
+              <div class="p-3 flex-1 space-y-2 overflow-auto opacity-70"><p class="text-xs text-slate-300 px-2 py-4 text-center">タスクなし</p></div>
+            </div>
+
           </div>
         </div>
       </div>
