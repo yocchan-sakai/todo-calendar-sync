@@ -1,4 +1,4 @@
-name: 毎朝Todoをカレンダーに登録
+name: 毎朝Todoをカレンダーに登録＆ダッシュボード更新
 
 on:
   schedule:
@@ -8,6 +8,9 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write  # GitHub Pagesへのプッシュに必要
 
 jobs:
   schedule-todos:
@@ -24,7 +27,20 @@ jobs:
       - name: 依存パッケージをインストール
         run: pip install -r requirements.txt
 
-      - name: スケジューラー実行
+      - name: カレンダーにTodoを登録
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
         run: python scheduler.py
+
+      - name: ダッシュボードHTMLを生成
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: python generate_dashboard.py
+
+      - name: GitHub Pagesにデプロイ
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "chore: ダッシュボード更新 $(date +'%Y-%m-%d %H:%M')"
+          git push
