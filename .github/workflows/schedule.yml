@@ -1,0 +1,27 @@
+name: 毎朝Todoをカレンダーに登録
+
+on:
+  schedule:
+    # 毎朝4:30 JST = UTC 19:30（前日）
+    - cron: "30 19 * * *"
+  workflow_dispatch:  # 手動実行ボタン（テスト用）
+
+jobs:
+  schedule-todos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: スケジューラー実行
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: python scheduler.py
