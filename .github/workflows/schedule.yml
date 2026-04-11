@@ -6,21 +6,20 @@ on:
     - cron: "30 19 * * *"
   workflow_dispatch:  # 手動実行ボタン（テスト用）
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   schedule-todos:
     runs-on: ubuntu-latest
     steps:
       - name: コードをチェックアウト
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Python 3.12 セットアップ
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: 依存パッケージをインストール
         run: pip install -r requirements.txt
