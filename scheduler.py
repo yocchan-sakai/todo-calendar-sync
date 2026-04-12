@@ -71,7 +71,7 @@ def fetch_tasks(creds):
         try:
             deadline = datetime.strptime(deadline_str.strip(), "%Y/%m/%d").date()
         except ValueError:
-            deadline = date.today() + timedelta(days=30)
+            deadline = datetime.now(JST).date() + timedelta(days=30)
 
         tasks.append({
             "name": task_name.strip(),
@@ -92,7 +92,7 @@ def sort_tasks(tasks):
     def score(t):
         imp = order.get(t["importance"], 2)
         urg = order.get(t["urgency"], 2)
-        days_left = (t["deadline"] - date.today()).days
+        days_left = (t["deadline"] - datetime.now(JST).date()).days
         return (imp, urg, days_left)
 
     return sorted(tasks, key=score)
@@ -253,7 +253,7 @@ def main():
     tasks = sort_tasks(tasks)
 
     for day_offset in range(SCHEDULE_DAYS_AHEAD):
-        target_date = date.today() + timedelta(days=day_offset)
+        target_date = datetime.now(JST).date() + timedelta(days=day_offset)
         print(f"\n--- {target_date} ---")
 
         free_slots = get_free_slots(creds, target_date)

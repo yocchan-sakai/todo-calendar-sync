@@ -6,8 +6,11 @@ import json
 import os
 import warnings
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 warnings.filterwarnings("ignore")
+
+JST = ZoneInfo("Asia/Tokyo")
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -51,7 +54,7 @@ def fetch_tasks(creds):
         except ValueError:
             deadline = None
 
-        days_left = (deadline - date.today()).days if deadline else None
+        days_left = (deadline - datetime.now(JST).date()).days if deadline else None
         tasks.append({
             "name": task_name.strip(),
             "importance": importance.strip(),
@@ -143,8 +146,8 @@ def quadrant_card_html(task):
 
 
 def generate_html(tasks):
-    today = date.today()
-    updated_at = datetime.now().strftime("%Y/%m/%d %H:%M")
+    today = datetime.now(JST).date()
+    updated_at = datetime.now(JST).strftime("%Y/%m/%d %H:%M")
 
     # 完了タスクはダッシュボードに表示しない
     active = [t for t in tasks if t["status"] != "完了"]
