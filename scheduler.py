@@ -6,6 +6,7 @@ Todo → Google Calendar 自動スケジューラー
 import os
 import json
 import math
+import re
 from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 
@@ -21,6 +22,36 @@ from config import (
 )
 
 JST = ZoneInfo("Asia/Tokyo")
+
+
+def parse_deadline(s: str):
+    """
+    複数の日付フォーマットに対応した日付パーサー
+    例: "2026/04/13", "2026-04-13", "4/13(日)", "4月13日" など
+    """
+    s = s.strip()
+    # (曜日) 部分を除去: "3/15(日)" → "3/15"
+    s = re.sub(r'[（(][^)）]*[)）]', '', s).strip()
+
+    for fmt in ["%Y/%m/%d", "%Y-%m-%d", "%Y年%m月%d日"]:
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            continue
+
+    # M/D または M月D日 フォーマット（年なし）→ 今年で解釈
+    m = re.match(r'^(\d{1,2})[/月](\d{1,2})日?$', s)
+    if m:
+        month, day = int(m.group(1)), int(m.group(2))
+        year = datetime.now(JST).year
+        try:
+            return date(year, month, day)
+        except ValueError:
+            pass
+
+    return None
+
+
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",  # 読み書き両方（完了行削除のため）
     "https://www.googleapis.com/auth/calendar",
@@ -68,9 +99,8 @@ def fetch_tasks(creds):
         except ValueError:
             duration = 30  # デフォルト30分
 
-        try:
-            deadline = datetime.strptime(deadline_str.strip(), "%Y/%m/%d").date()
-        except ValueError:
+        deadline = parse_deadline(deadline_str)
+        if deadline is None:
             deadline = datetime.now(JST).date() + timedelta(days=30)
 
         tasks.append({

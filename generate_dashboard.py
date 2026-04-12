@@ -4,6 +4,7 @@ Google Sheetsからタスクを読み込み、ダッシュボードHTMLを生成
 
 import json
 import os
+import re
 import warnings
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -11,6 +12,29 @@ from zoneinfo import ZoneInfo
 warnings.filterwarnings("ignore")
 
 JST = ZoneInfo("Asia/Tokyo")
+
+
+def parse_deadline(s: str):
+    """複数の日付フォーマットに対応した日付パーサー"""
+    s = s.strip()
+    s = re.sub(r'[（(][^)）]*[)）]', '', s).strip()  # (曜日) を除去
+
+    for fmt in ["%Y/%m/%d", "%Y-%m-%d", "%Y年%m月%d日"]:
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            continue
+
+    m = re.match(r'^(\d{1,2})[/月](\d{1,2})日?$', s)
+    if m:
+        month, day = int(m.group(1)), int(m.group(2))
+        year = datetime.now(JST).year
+        try:
+            return date(year, month, day)
+        except ValueError:
+            pass
+
+    return None
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -49,10 +73,7 @@ def fetch_tasks(creds):
             duration = int(duration_str)
         except ValueError:
             duration = 30
-        try:
-            deadline = datetime.strptime(deadline_str.strip(), "%Y/%m/%d").date()
-        except ValueError:
-            deadline = None
+        deadline = parse_deadline(deadline_str) if deadline_str.strip() else None
 
         days_left = (deadline - datetime.now(JST).date()).days if deadline else None
         tasks.append({
