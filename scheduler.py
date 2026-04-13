@@ -288,6 +288,8 @@ def main():
 
         free_slots = get_free_slots(creds, target_date)
         print(f"空き枠: {len(free_slots)}件")
+        for s, e, p in free_slots:
+            print(f"  [{p}] {s.strftime('%H:%M')}〜{e.strftime('%H:%M')}")
 
         # 午前枠と午後枠に分ける
         morning_slots = [(s, e) for s, e, p in free_slots if p == "morning"]
@@ -316,12 +318,13 @@ def main():
                     scheduled.add(task_id)
                     cursor = event_end
 
+        # 午前: 思考系のみ / 午後: 単純作業のみ（タスク種別を厳守）
         schedule_into(morning_slots, thinking_tasks)
         schedule_into(afternoon_slots, simple_tasks)
 
-        # 午後に入りきらなかった思考系は午後にも回す
-        remaining_thinking = [t for t in thinking_tasks if t["name"] not in scheduled]
-        schedule_into(afternoon_slots, remaining_thinking)
+        unscheduled = [t["name"] for t in tasks if t["name"] not in scheduled]
+        if unscheduled:
+            print(f"  今日は枠に入らなかったタスク: {', '.join(unscheduled)}")
 
     # 完了タスクをSheetsから削除
     print("\n--- 完了タスクの削除 ---")
